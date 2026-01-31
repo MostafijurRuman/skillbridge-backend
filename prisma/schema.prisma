@@ -13,24 +13,48 @@ datasource db {
   provider = "postgresql"
 }
 
+///////////////////////
+// ENUMS
+///////////////////////
+
+enum Role {
+  STUDENT
+  TUTOR
+  ADMIN
+}
+
+enum BookingStatus {
+  UPCOMING
+  COMPLETED
+  CANCELLED
+}
+
+///////////////////////
+// USER & AUTH MODELS
+///////////////////////
+
 model User {
   id        String   @id @default(uuid())
   name      String
   email     String   @unique
   password  String?
+  role      Role     @default(STUDENT)
+
   isBanned  Boolean  @default(false)
+  bannedAt  DateTime?
+
+  emailVerified Boolean @default(false)
+  image         String?
+
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   tutorProfile    TutorProfile?
   studentBookings Booking[]     @relation("StudentBookings")
   reviews         Review[]
-  emailVerified   Boolean       @default(false)
-  image           String?
-  updatedAt       DateTime      @updatedAt
-  sessions        Session[]
-  accounts        Account[]
 
-  role String? @default("STUDENT")
+  sessions  Session[]
+  accounts  Account[]
 
   @@map("user")
 }
@@ -38,25 +62,25 @@ model User {
 model Session {
   id        String   @id
   expiresAt DateTime
-  token     String
+  token     String   @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   ipAddress String?
   userAgent String?
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([token])
+  userId String
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@index([userId])
   @@map("session")
 }
 
 model Account {
-  id                    String    @id
+  id                    String   @id
   accountId             String
   providerId            String
   userId                String
-  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   accessToken           String?
   refreshToken          String?
   idToken               String?
@@ -64,8 +88,8 @@ model Account {
   refreshTokenExpiresAt DateTime?
   scope                 String?
   password              String?
-  createdAt             DateTime  @default(now())
-  updatedAt             DateTime  @updatedAt
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
 
   @@index([userId])
   @@map("account")
@@ -83,23 +107,9 @@ model Verification {
   @@map("verification")
 }
 
-model Booking {
-  id        String        @id @default(uuid())
-  studentId String
-  tutorId   String
-  status    BookingStatus @default(UPCOMING)
-  createdAt DateTime      @default(now())
-
-  student User         @relation("StudentBookings", fields: [studentId], references: [id])
-  tutor   TutorProfile @relation(fields: [tutorId], references: [id])
-}
-
-
-enum BookingStatus {
-  UPCOMING
-  COMPLETED
-  CANCELLED
-}
+///////////////////////
+// CORE APP MODELS
+///////////////////////
 
 model TutorProfile {
   id         String @id @default(uuid())
@@ -123,13 +133,25 @@ model Category {
 }
 
 model Availability {
-  id        String @id @default(uuid())
+  id        String   @id @default(uuid())
   tutorId   String
   day       String
-  startTime String
-  endTime   String
+  startTime DateTime
+  endTime   DateTime
 
   tutor TutorProfile @relation(fields: [tutorId], references: [id])
+}
+
+model Booking {
+  id          String        @id @default(uuid())
+  studentId   String
+  tutorId     String
+  sessionDate DateTime
+  status      BookingStatus @default(UPCOMING)
+  createdAt   DateTime      @default(now())
+
+  student User         @relation("StudentBookings", fields: [studentId], references: [id])
+  tutor   TutorProfile @relation(fields: [tutorId], references: [id])
 }
 
 model Review {
@@ -143,5 +165,4 @@ model Review {
 
   student User         @relation(fields: [studentId], references: [id])
   tutor   TutorProfile @relation(fields: [tutorId], references: [id])
-
 }

@@ -6,7 +6,7 @@ import { auth } from "./lib/auth";
 const app: Application = express();
 
 // Better Auth Routes
-app.all("/api/auth/*", toNodeHandler(auth));
+app.all("/api/auth/*path", toNodeHandler(auth));
 
 // Middleware
 app.use(cors());
