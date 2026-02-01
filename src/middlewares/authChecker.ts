@@ -1,25 +1,7 @@
 import { auth as betterAuth } from "../lib/auth";
 import { NextFunction, Request, Response } from "express";
 
-export enum UserRole {
-    STUDENT = "STUDENT",
-    TUTOR = "TUTOR",
-    ADMIN = "ADMIN",
-}
-
-declare global {
-    namespace Express {
-        interface Request {
-            user?: {
-                id: string;
-                email: string;
-                name: string;
-                role: UserRole;
-                isBanned: boolean;
-            };
-        }
-    }
-}
+import { UserRole } from "../enums/role.enum";
 
 const authChecker = (...roles: UserRole[]) => {
     return async (req: Request, res: Response, next: NextFunction) => {
