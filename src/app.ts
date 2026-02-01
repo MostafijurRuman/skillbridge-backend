@@ -2,6 +2,8 @@ import express, { type Application, type Request, type Response } from "express"
 import cors from "cors";
 import { toNodeHandler } from "better-auth/node";
 import { auth } from "./lib/auth";
+import { notFound } from "./middlewares/notFound";
+import errorHandler from "./middlewares/globalErrorHandling";
 
 const app: Application = express();
 
@@ -19,5 +21,8 @@ app.get("/", (req: Request, res: Response) => {
         message: "Welcome to SkillBridge Backend Service",
     });
 });
+app.use(notFound);
+
+app.use(errorHandler);
 
 export default app;

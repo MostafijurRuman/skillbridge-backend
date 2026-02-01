@@ -34,14 +34,14 @@ enum BookingStatus {
 ///////////////////////
 
 model User {
-  id        String   @id @default(uuid())
-  name      String
-  email     String   @unique
-  password  String?
-  role      Role     @default(STUDENT)
+  id       String  @id @default(uuid())
+  name     String
+  email    String  @unique
+  password String?
+  role     Role    @default(STUDENT)
 
-  isBanned  Boolean  @default(false)
-  bannedAt  DateTime?
+  isBanned Boolean   @default(false)
+  bannedAt DateTime?
 
   emailVerified Boolean @default(false)
   image         String?
@@ -53,8 +53,8 @@ model User {
   studentBookings Booking[]     @relation("StudentBookings")
   reviews         Review[]
 
-  sessions  Session[]
-  accounts  Account[]
+  sessions Session[]
+  accounts Account[]
 
   @@map("user")
 }
@@ -69,18 +69,18 @@ model Session {
   userAgent String?
 
   userId String
-  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@map("session")
 }
 
 model Account {
-  id                    String   @id
+  id                    String    @id
   accountId             String
   providerId            String
   userId                String
-  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   accessToken           String?
   refreshToken          String?
   idToken               String?
@@ -88,8 +88,8 @@ model Account {
   refreshTokenExpiresAt DateTime?
   scope                 String?
   password              String?
-  createdAt             DateTime @default(now())
-  updatedAt             DateTime @updatedAt
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
 
   @@index([userId])
   @@map("account")
