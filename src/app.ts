@@ -5,6 +5,8 @@ import { auth } from "./lib/auth";
 import { notFound } from "./middlewares/notFound";
 import errorHandler from "./middlewares/globalErrorHandling";
 import authRouter from "./modules/auth/auth.routes";
+import { categoryRouter } from "./modules/category/category";
+import { tutorRouter } from "./modules/tutor/tutor.routes";
 
 const app: Application = express();
 
@@ -18,6 +20,8 @@ app.use(express.urlencoded({ extended: true }));
 
 // Routes
 app.use("/api/auth", authRouter);
+app.use("/api/tutors", tutorRouter);
+app.use("/api/admin", categoryRouter);
 
 // Better Auth Routes
 app.all("/api/auth/*path", toNodeHandler(auth));

@@ -1,7 +1,0 @@
-Loaded Prisma config from prisma.config.ts.
-
-Prisma schema loaded from prisma\schema.prisma.
-Error: 
-E:\Next-Devs-Practice\skillbridge-backend\node_modules\@prisma\client exists and is not empty but doesn't look like a generated Prisma Client. Please check your output path and remove the existing directory if you indeed want to generate the Prisma Client in that location.
-
-
