@@ -141,9 +141,47 @@ const cancelBooking = async (bookingId: string, studentId: string) => {
     });
 };
 
+const completeBooking = async (bookingId: string, userId: string) => {
+    // 1. Get Tutor Profile ID from User ID
+    const tutorProfile = await prisma.tutorProfile.findUnique({
+        where: { userId },
+    });
+
+    if (!tutorProfile) {
+        throw new Error("Tutor profile not found. Ensure you are registered as a tutor.");
+    }
+
+    // 2. Find the booking ensuring it belongs to this tutor
+    const booking = await prisma.booking.findFirst({
+        where: {
+            id: bookingId,
+            tutorId: tutorProfile.id,
+        },
+    });
+
+    if (!booking) {
+        throw new Error("Booking not found or you are not authorized to complete this booking");
+    }
+
+    if (booking.status === BookingStatus.COMPLETED) {
+        throw new Error("Booking is already completed");
+    }
+
+    if (booking.status === BookingStatus.CANCELLED) {
+        throw new Error("Cannot complete a cancelled booking");
+    }
+
+    // 3. Update status
+    return prisma.booking.update({
+        where: { id: bookingId },
+        data: { status: BookingStatus.COMPLETED },
+    });
+};
+
 export const bookingService = {
     createBooking,
     getMyBookings,
     getBookingById,
     cancelBooking,
+    completeBooking,
 };

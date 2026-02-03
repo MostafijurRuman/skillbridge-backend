@@ -77,9 +77,30 @@ const cancelBooking = async (req: Request, res: Response) => {
   }
 };
 
+const completeBooking = async (req: Request, res: Response) => {
+  try {
+    const booking = await bookingService.completeBooking(
+      req.params.id as string,
+      req.user!.id
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Booking completed successfully",
+      data: booking,
+    });
+  } catch (error: any) {
+    res.status(400).json({
+      success: false,
+      message: error.message || "Failed to complete booking",
+    });
+  }
+};
+
 export const bookingController = {
   createBooking,
   getMyBookings,
   getBookingDetails,
   cancelBooking,
+  completeBooking,
 };

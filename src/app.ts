@@ -8,6 +8,7 @@ import authRouter from "./modules/auth/auth.routes";
 import { categoryRouter } from "./modules/category/category";
 import { tutorRouter } from "./modules/tutor/tutor.routes";
 import { bookingRouter } from "./modules/booking/booking.routes";
+import { reviewRouter } from "./modules/review/review.routes";
 
 const app: Application = express();
 
@@ -24,6 +25,7 @@ app.use("/api/auth", authRouter);
 app.use("/api/tutors", tutorRouter);
 app.use("/api/admin", categoryRouter);
 app.use("/api/bookings", bookingRouter);
+app.use("/api/reviews", reviewRouter);
 
 // Better Auth Routes
 app.all("/api/auth/*path", toNodeHandler(auth));
