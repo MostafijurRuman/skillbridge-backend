@@ -5,10 +5,10 @@ import { auth } from "./lib/auth";
 import { notFound } from "./middlewares/notFound";
 import errorHandler from "./middlewares/globalErrorHandling";
 import authRouter from "./modules/auth/auth.routes";
-import { categoryRouter } from "./modules/category/category";
 import { tutorRouter } from "./modules/tutor/tutor.routes";
 import { bookingRouter } from "./modules/booking/booking.routes";
 import { reviewRouter } from "./modules/review/review.routes";
+import { adminRouter } from "./modules/admin/admin.routes";
 
 const app: Application = express();
 
@@ -23,9 +23,9 @@ app.use(express.urlencoded({ extended: true }));
 // Routes
 app.use("/api/auth", authRouter);
 app.use("/api/tutors", tutorRouter);
-app.use("/api/admin", categoryRouter);
 app.use("/api/bookings", bookingRouter);
 app.use("/api/reviews", reviewRouter);
+app.use("/api/admin", adminRouter);
 
 // Better Auth Routes
 app.all("/api/auth/*path", toNodeHandler(auth));
