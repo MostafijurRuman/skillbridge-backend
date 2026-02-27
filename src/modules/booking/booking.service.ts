@@ -38,7 +38,10 @@ const createBooking = async (
     const tAvailability = await prisma.availability.findMany({
         where: {
             tutorId,
-            day: dayName,
+            day: {
+                equals: dayName,
+                mode: "insensitive",
+            },
         },
     });
 

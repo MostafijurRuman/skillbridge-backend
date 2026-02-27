@@ -73,9 +73,7 @@ const tutors = [
 
 function createDateTime(timeStr: string): Date {
     const [hours = 0, minutes = 0] = timeStr.split(":").map(Number);
-    const date = new Date();
-    date.setHours(hours, minutes, 0, 0);
-    return date;
+    return new Date(Date.UTC(1970, 0, 1, hours, minutes, 0, 0));
 }
 
 async function seedTutorProfile() {
