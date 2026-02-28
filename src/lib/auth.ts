@@ -7,7 +7,7 @@ export const auth = betterAuth({
     provider: "postgresql",
   }),
 
-  trustedOrigins: [process.env.APP_URL!, "http://localhost:3000"],
+  trustedOrigins: [process.env.APP_URL!, "http://localhost:3000","https://skill-bridge-client-gray.vercel.app"],
 
   user: {
     additionalFields: {
