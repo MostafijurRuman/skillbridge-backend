@@ -6,5 +6,6 @@ const router = Router();
 
 // Custom route to get current user
 router.get("/me", authChecker(), authController.getMe);
+router.patch("/me", authChecker(), authController.updateMe);
 
 export default router;
