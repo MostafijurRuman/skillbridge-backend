@@ -2,6 +2,28 @@
 import { prisma } from "../../lib/prisma";
 import { BookingStatus } from "../../enums/bookingStatus.enum";
 
+const WEEK_DAYS = [
+    "Sunday",
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+] as const;
+
+const getDayNameByIndex = (index: number): (typeof WEEK_DAYS)[number] => {
+    const day = WEEK_DAYS[index];
+    if (!day) {
+        throw new Error("Invalid session date");
+    }
+    return day;
+};
+
+const getDayName = (date: Date) => getDayNameByIndex(date.getUTCDay());
+
+const getPreviousDayName = (dayIndex: number) => getDayNameByIndex((dayIndex + 6) % 7);
+
 const createBooking = async (
     studentId: string,
     tutorId: string,
@@ -19,55 +41,34 @@ const createBooking = async (
         throw new Error("Cannot book sessions in the past");
     }
 
-    const days = [
-        "Sunday",
-        "Monday",
-        "Tuesday",
-        "Wednesday",
-        "Thursday",
-        "Friday",
-        "Saturday",
-    ];
-    const dayName = days[bookingTime.getUTCDay()];
+    const bookingDayIndex = bookingTime.getUTCDay();
+    const dayName = getDayName(bookingTime);
+    const previousDayName = getPreviousDayName(bookingDayIndex);
 
-    if (!dayName) {
-        throw new Error("Invalid session date");
-    }
-
-    // 2. Check Tutor Availability for that Day
+    // 2. Check Tutor Availability by day only.
+    // Includes previous day for overnight schedules handled by frontend.
     const tAvailability = await prisma.availability.findMany({
         where: {
             tutorId,
-            day: {
-                equals: dayName,
-                mode: "insensitive",
-            },
+            OR: [
+                {
+                    day: {
+                        equals: dayName,
+                        mode: "insensitive",
+                    },
+                },
+                {
+                    day: {
+                        equals: previousDayName,
+                        mode: "insensitive",
+                    },
+                },
+            ],
         },
     });
 
     if (!tAvailability || tAvailability.length === 0) {
         throw new Error("Tutor is not available on this day");
-    }
-
-    const getMinutes = (date: Date) => date.getUTCHours() * 60 + date.getUTCMinutes();
-
-    const bookingStartMinutes = getMinutes(bookingTime);
-    const bookingEndMinutes = bookingStartMinutes + 60; // Assuming 1 hour duration
-
-    const isWithinSlot = tAvailability.some((slot) => {
-        const slotStart = getMinutes(slot.startTime);
-        let slotEnd = getMinutes(slot.endTime);
-
-        // Handle midnight edge case (00:00 should be treated as end of day 1440 if it wraps)
-        if (slotEnd === 0 && slotStart > 0) {
-            slotEnd = 1440;
-        }
-
-        return bookingStartMinutes >= slotStart && bookingEndMinutes <= slotEnd;
-    });
-
-    if (!isWithinSlot) {
-        throw new Error("Selected time is outside of tutor's availability");
     }
 
     // 3. Check for Overlapping Bookings (assuming 1 hour duration)
