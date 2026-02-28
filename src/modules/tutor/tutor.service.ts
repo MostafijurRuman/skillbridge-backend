@@ -26,6 +26,12 @@ type AvailabilityInput = {
   endTime: unknown;
 };
 
+type UpdateAvailabilityPayload = {
+  day?: unknown;
+  startTime?: unknown;
+  endTime?: unknown;
+};
+
 const dayLookup = WEEK_DAYS.reduce<Record<string, WeekDay>>((acc, day) => {
   acc[day.toLowerCase()] = day;
   return acc;
@@ -184,6 +190,44 @@ const normalizeSlotsInput = (
   return normalizedSlots;
 };
 
+const getTutorProfileOrThrow = async (userId: string) => {
+  const tutor = await prisma.tutorProfile.findUnique({
+    where: { userId },
+  });
+
+  if (!tutor) {
+    throw new Error("Tutor profile not found");
+  }
+
+  return tutor;
+};
+
+const ensureValidAvailabilityUpdatePayload = (payload: unknown): UpdateAvailabilityPayload => {
+  if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
+    throw new Error("Request body must be a valid JSON object");
+  }
+
+  const raw = payload as Record<string, unknown>;
+  const allowedFields = new Set(["day", "startTime", "endTime"]);
+  const invalidFields = Object.keys(raw).filter((key) => !allowedFields.has(key));
+
+  if (invalidFields.length > 0) {
+    throw new Error(
+      `Invalid field(s): ${invalidFields.join(", ")}. Only day, startTime and endTime are allowed`
+    );
+  }
+
+  if (raw.day === undefined && raw.startTime === undefined && raw.endTime === undefined) {
+    throw new Error("Provide at least one field to update: day, startTime, or endTime");
+  }
+
+  return {
+    day: raw.day,
+    startTime: raw.startTime,
+    endTime: raw.endTime,
+  };
+};
+
 // =======================
 // Public Services
 // =======================
@@ -325,13 +369,7 @@ const updateProfile = async (userId: string, data: any) => {
 // =======================
 
 const setAvailability = async (userId: string, slots: unknown) => {
-  const tutor = await prisma.tutorProfile.findUnique({
-    where: { userId },
-  });
-
-  if (!tutor) {
-    throw new Error("Tutor profile not found");
-  }
+  const tutor = await getTutorProfileOrThrow(userId);
 
   const normalizedSlots = normalizeSlotsInput(slots);
 
@@ -398,13 +436,7 @@ const setAvailability = async (userId: string, slots: unknown) => {
 };
 
 const getAvailability = async (userId: string) => {
-  const tutor = await prisma.tutorProfile.findUnique({
-    where: { userId },
-  });
-
-  if (!tutor) {
-    throw new Error("Tutor profile not found");
-  }
+  const tutor = await getTutorProfileOrThrow(userId);
 
   const availability = await prisma.availability.findMany({
     where: { tutorId: tutor.id },
@@ -415,6 +447,90 @@ const getAvailability = async (userId: string) => {
   });
 
   return formatAvailability(availability as AvailabilityRecord[]);
+};
+
+const updateAvailability = async (
+  userId: string,
+  availabilityId: string,
+  payload: unknown
+) => {
+  const tutor = await getTutorProfileOrThrow(userId);
+  const data = ensureValidAvailabilityUpdatePayload(payload);
+
+  const existingSlot = await prisma.availability.findFirst({
+    where: {
+      id: availabilityId,
+      tutorId: tutor.id,
+    },
+  });
+
+  if (!existingSlot) {
+    throw new Error("Availability slot not found");
+  }
+
+  const normalizedDay = data.day !== undefined ? normalizeDay(data.day) : normalizeDay(existingSlot.day);
+  const startTime =
+    data.startTime !== undefined ? parseTimeValue(data.startTime, "startTime") : existingSlot.startTime;
+  const endTime = data.endTime !== undefined ? parseTimeValue(data.endTime, "endTime") : existingSlot.endTime;
+
+  const nextSlot = {
+    day: normalizedDay,
+    startTime,
+    endTime,
+  };
+
+  const range = getMinuteRange(nextSlot);
+  if (range.start >= range.end) {
+    throw new Error(`Invalid time range for ${normalizedDay}. endTime must be after startTime.`);
+  }
+
+  const sameDayOtherSlots = await prisma.availability.findMany({
+    where: {
+      tutorId: tutor.id,
+      id: { not: availabilityId },
+      day: {
+        equals: normalizedDay,
+        mode: "insensitive",
+      },
+    },
+  });
+
+  const hasOverlap = sameDayOtherSlots.some((slot) => {
+    const slotRange = getMinuteRange(slot);
+    return range.start < slotRange.end && range.end > slotRange.start;
+  });
+
+  if (hasOverlap) {
+    throw new Error(`Overlapping availability with existing slot found for ${normalizedDay}`);
+  }
+
+  const updated = await prisma.availability.update({
+    where: { id: availabilityId },
+    data: nextSlot,
+  });
+
+  return formatAvailability([updated as AvailabilityRecord])[0];
+};
+
+const removeAvailability = async (userId: string, availabilityId: string) => {
+  const tutor = await getTutorProfileOrThrow(userId);
+
+  const existingSlot = await prisma.availability.findFirst({
+    where: {
+      id: availabilityId,
+      tutorId: tutor.id,
+    },
+  });
+
+  if (!existingSlot) {
+    throw new Error("Availability slot not found");
+  }
+
+  const removed = await prisma.availability.delete({
+    where: { id: availabilityId },
+  });
+
+  return formatAvailability([removed as AvailabilityRecord])[0];
 };
 
 // =======================
@@ -453,5 +569,7 @@ export const tutorService = {
   updateProfile,
   setAvailability,
   getAvailability,
+  updateAvailability,
+  removeAvailability,
   getTutorDashboard,
 };

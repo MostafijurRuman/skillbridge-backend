@@ -15,5 +15,7 @@ router.get("/availability/me", authChecker(UserRole.TUTOR), tutorController.getA
 router.post("/profile", authChecker(UserRole.TUTOR), tutorController.createTutorProfile);
 router.patch("/profile", authChecker(UserRole.TUTOR), tutorController.updateTutorProfile);
 router.put("/availability", authChecker(UserRole.TUTOR), tutorController.setAvailability);
+router.patch("/availability/:id", authChecker(UserRole.TUTOR), tutorController.updateAvailability);
+router.delete("/availability/:id", authChecker(UserRole.TUTOR), tutorController.removeAvailability);
 
 export const tutorRouter = router;

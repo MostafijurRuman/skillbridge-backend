@@ -58,6 +58,31 @@ const getAvailability = async (req: Request, res: Response) => {
     }
 };
 
+const updateAvailability = async (req: Request, res: Response) => {
+    try {
+        const availability = await tutorService.updateAvailability(
+            req.user!.id,
+            req.params.id as string,
+            req.body
+        );
+        res.status(200).json({ success: true, data: availability });
+    } catch (error: any) {
+        res.status(400).json({ success: false, message: error.message });
+    }
+};
+
+const removeAvailability = async (req: Request, res: Response) => {
+    try {
+        const availability = await tutorService.removeAvailability(
+            req.user!.id,
+            req.params.id as string
+        );
+        res.status(200).json({ success: true, data: availability });
+    } catch (error: any) {
+        res.status(400).json({ success: false, message: error.message });
+    }
+};
+
 const getTutorDashboard = async (req: Request, res: Response) => {
     try {
         const dashboard = await tutorService.getTutorDashboard(req.user!.id);
@@ -74,5 +99,7 @@ export const tutorController = {
     updateTutorProfile,
     setAvailability,
     getAvailability,
+    updateAvailability,
+    removeAvailability,
     getTutorDashboard,
 };
