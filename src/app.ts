@@ -12,9 +12,37 @@ import { adminRouter } from "./modules/admin/admin.routes";
 
 const app: Application = express();
 
+const normalizeOrigin = (value: string) => value.trim().replace(/\/+$/, "");
+const splitOrigins = (value?: string) =>
+    (value ?? "")
+        .split(",")
+        .map((origin) => origin.trim())
+        .filter(Boolean)
+        .map(normalizeOrigin);
+
+const allowedOrigins = Array.from(
+    new Set([
+        ...splitOrigins(process.env.CLIENT_APP_URLS),
+        ...splitOrigins(process.env.CLIENT_APP_URL),
+        "https://skill-bridge-client-gray.vercel.app",
+        "http://localhost:3000",
+    ])
+);
+
 // Middleware
 app.use(cors({
-    origin: process.env.CLIENT_APP_URL || "http://localhost:3000",
+    origin: (origin, callback) => {
+        if (!origin) {
+            return callback(null, true);
+        }
+
+        const normalizedIncomingOrigin = normalizeOrigin(origin);
+        if (allowedOrigins.includes(normalizedIncomingOrigin)) {
+            return callback(null, true);
+        }
+
+        return callback(new Error("Not allowed by CORS"));
+    },
     credentials: true
 }))
 app.use(express.json());

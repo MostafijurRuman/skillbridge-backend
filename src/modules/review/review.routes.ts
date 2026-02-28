@@ -5,6 +5,10 @@ import { UserRole } from "../../enums/role.enum";
 
 const router = express.Router();
 
+// Public read routes
+router.get("/booking/:bookingId", reviewController.getReviewByBookingId);
+router.get("/tutor/:tutorId", reviewController.getReviewsByTutorId);
+
 // Student can create review only
 router.post("/", authChecker(UserRole.STUDENT), reviewController.createReview);
 

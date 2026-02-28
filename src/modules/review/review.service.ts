@@ -1,6 +1,28 @@
 import { BookingStatus } from "../../enums/bookingStatus.enum";
 import { prisma } from "../../lib/prisma";
 
+const reviewInclude = {
+  student: {
+    select: {
+      id: true,
+      name: true,
+      image: true,
+    },
+  },
+  tutor: {
+    include: {
+      user: {
+        select: {
+          id: true,
+          name: true,
+          image: true,
+          email: true,
+        },
+      },
+    },
+  },
+} as const;
+
 const createReview = async (
   studentId: string,
   tutorId: string,
@@ -58,6 +80,54 @@ const createReview = async (
   return review;
 };
 
+const getReviewsByTutorId = async (tutorId: string) => {
+  const tutor = await prisma.tutorProfile.findUnique({
+    where: { id: tutorId },
+    select: { id: true },
+  });
+
+  if (!tutor) {
+    throw new Error("Tutor not found");
+  }
+
+  return prisma.review.findMany({
+    where: { tutorId },
+    include: reviewInclude,
+    orderBy: { createdAt: "desc" },
+  });
+};
+
+const getReviewByBookingId = async (bookingId: string) => {
+  const booking = await prisma.booking.findUnique({
+    where: { id: bookingId },
+    select: {
+      id: true,
+      studentId: true,
+      tutorId: true,
+    },
+  });
+
+  if (!booking) {
+    throw new Error("Booking not found");
+  }
+
+  const review = await prisma.review.findFirst({
+    where: {
+      studentId: booking.studentId,
+      tutorId: booking.tutorId,
+    },
+    include: reviewInclude,
+  });
+
+  if (!review) {
+    throw new Error("Review not found for this booking");
+  }
+
+  return review;
+};
+
 export const reviewService = {
   createReview,
+  getReviewsByTutorId,
+  getReviewByBookingId,
 };
