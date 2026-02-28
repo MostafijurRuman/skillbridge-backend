@@ -25,6 +25,7 @@ const allowedOrigins = Array.from(
         ...splitOrigins(process.env.CLIENT_APP_URLS),
         ...splitOrigins(process.env.CLIENT_APP_URL),
         "https://skill-bridge-client-gray.vercel.app",
+        "https://skillbridge-backend-1cir.onrender.com",
         "http://localhost:3000",
     ])
 );
