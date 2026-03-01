@@ -14,6 +14,7 @@ router.get("/dashboard/me", authChecker(UserRole.TUTOR), tutorController.getTuto
 router.get("/availability/me", authChecker(UserRole.TUTOR), tutorController.getAvailability);
 router.post("/profile", authChecker(UserRole.TUTOR), tutorController.createTutorProfile);
 router.patch("/profile", authChecker(UserRole.TUTOR), tutorController.updateTutorProfile);
+router.post("/availability", authChecker(UserRole.TUTOR), tutorController.setAvailability);
 router.put("/availability", authChecker(UserRole.TUTOR), tutorController.setAvailability);
 router.patch("/availability/:id", authChecker(UserRole.TUTOR), tutorController.updateAvailability);
 router.delete("/availability/:id", authChecker(UserRole.TUTOR), tutorController.removeAvailability);
