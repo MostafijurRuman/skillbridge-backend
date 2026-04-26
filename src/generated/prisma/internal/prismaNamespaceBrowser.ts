@@ -176,7 +176,10 @@ export const BookingScalarFieldEnum = {
   tutorId: 'tutorId',
   sessionDate: 'sessionDate',
   status: 'status',
-  createdAt: 'createdAt'
+  createdAt: 'createdAt',
+  paymentStatus: 'paymentStatus',
+  stripePaymentIntentId: 'stripePaymentIntentId',
+  amount: 'amount'
 } as const
 
 export type BookingScalarFieldEnum = (typeof BookingScalarFieldEnum)[keyof typeof BookingScalarFieldEnum]

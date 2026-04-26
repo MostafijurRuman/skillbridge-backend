@@ -9,6 +9,7 @@ import { tutorRouter } from "./modules/tutor/tutor.routes";
 import { bookingRouter } from "./modules/booking/booking.routes";
 import { reviewRouter } from "./modules/review/review.routes";
 import { adminRouter } from "./modules/admin/admin.routes";
+import { stripeWebhookController } from "./modules/payment/stripeWebhook.controller";
 
 const app: Application = express();
 
@@ -46,6 +47,13 @@ app.use(cors({
     },
     credentials: true
 }))
+
+app.post(
+    "/api/webhooks/stripe",
+    express.raw({ type: "application/json" }),
+    stripeWebhookController.handleStripeWebhook
+);
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

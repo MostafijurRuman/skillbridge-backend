@@ -29,6 +29,13 @@ enum BookingStatus {
   CANCELLED
 }
 
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
 ///////////////////////
 // USER & AUTH MODELS
 ///////////////////////
@@ -149,6 +156,10 @@ model Booking {
   sessionDate DateTime
   status      BookingStatus @default(UPCOMING)
   createdAt   DateTime      @default(now())
+
+  paymentStatus         PaymentStatus @default(PENDING)
+  stripePaymentIntentId String?       @unique
+  amount                Int           @default(0)
 
   student User         @relation("StudentBookings", fields: [studentId], references: [id])
   tutor   TutorProfile @relation(fields: [tutorId], references: [id])
