@@ -9,6 +9,6 @@ const router = express.Router();
 router.get("/users", authChecker(UserRole.ADMIN), adminController.getUsers);
 router.get("/bookings", authChecker(UserRole.ADMIN), adminController.getAllBookings);
 router.patch("/users/:id", authChecker(UserRole.ADMIN), adminController.updateUserStatus);
-router.get("/categories", authChecker(UserRole.ADMIN), adminController.getAllCategories);
+router.get("/categories", adminController.getAllCategories);
 
 export const adminRouter: Router = router;

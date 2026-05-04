@@ -249,6 +249,21 @@ const getTutors = (filters: any) => {
     };
   }
 
+  if (filters?.search) {
+    where.OR = [
+      {
+        user: {
+          name: { contains: filters.search, mode: "insensitive" }
+        }
+      },
+      {
+        categories: {
+          some: { name: { contains: filters.search, mode: "insensitive" } }
+        }
+      }
+    ];
+  }
+
   return prisma.tutorProfile.findMany({
     where,
     include: {
