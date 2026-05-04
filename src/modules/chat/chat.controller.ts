@@ -10,9 +10,9 @@ export const chatController = async (req: Request, res: Response): Promise<void>
             return;
         }
 
-        const reply = await processChatMessage(message, history || []);
+        const result = await processChatMessage(message, history || []);
 
-        res.status(200).json({ reply });
+        res.status(200).json(result);
     } catch (error) {
         console.error('Chat error:', error);
         res.status(500).json({ error: 'Something went wrong. Please try again.' });
