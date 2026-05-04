@@ -11,6 +11,7 @@ import { reviewRouter } from "./modules/review/review.routes";
 import { adminRouter } from "./modules/admin/admin.routes";
 import { stripeWebhookController } from "./modules/payment/stripeWebhook.controller";
 import { searchRouter } from "./modules/search/search.routes";
+import { chatRouter } from "./modules/chat/chat.routes";
 
 const app: Application = express();
 
@@ -65,6 +66,7 @@ app.use("/api/bookings", bookingRouter);
 app.use("/api/reviews", reviewRouter);
 app.use("/api/admin", adminRouter);
 app.use("/api/search", searchRouter);
+app.use("/api/chat", chatRouter);
 
 // Better Auth Routes
 app.all("/api/auth/*path", toNodeHandler(auth));
